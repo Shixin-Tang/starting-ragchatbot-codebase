@@ -1,0 +1,150 @@
+RAG SYSTEM QUERY FLOW - ASCII DIAGRAM
+==========================================
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                FRONTEND LAYER                                   │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+    ┌──────────┐     "What is MCP?"     ┌─────────────────┐
+    │   USER   │ ─────────────────────> │ script.js       │
+    │          │                        │ - Disable input │
+    └──────────┘                        │ - Show loading  │
+                                        │ - POST /api/query│
+                                        └─────────┬───────┘
+                                                  │
+                                                  ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                 API LAYER                                       │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+                                        ┌─────────────────┐
+                                        │    app.py       │
+                                        │ @app.post       │
+                                        │ ("/api/query")  │
+                                        └─────────┬───────┘
+                                                  │
+                                                  ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              PROCESSING LAYER                                   │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+                                        ┌─────────────────┐
+                                        │   RAG System    │
+                                        │   (rag_system.py)│
+                                        └─────────┬───────┘
+                                                  │
+                        ┌─────────────────────────┼─────────────────────────┐
+                        ▼                         ▼                         ▼
+            ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
+            │ Session Manager │      │  AI Generator   │      │  Tool Manager   │
+            │ - Get history   │      │ - Call Claude   │      │ - Get tools     │
+            │ - Store context │      │ - Handle tools  │      │ - Execute tools │
+            └─────────────────┘      └─────────┬───────┘      └─────────────────┘
+                                               │
+                                               ▼
+                                    ┌─────────────────┐
+                                    │ CLAUDE API CALL │
+                                    │ "I need to       │
+                                    │  search courses" │
+                                    └─────────┬───────┘
+                                              │
+                                              ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                               SEARCH LAYER                                      │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+                                    ┌─────────────────┐
+                                    │   Search Tool   │
+                                    │ (search_tools.py)│
+                                    │ execute(         │
+                                    │   query="MCP",   │
+                                    │   course_name="" │
+                                    │ )                │
+                                    └─────────┬───────┘
+                                              │
+                                              ▼
+                                    ┌─────────────────┐
+                                    │  Vector Store   │
+                                    │ (vector_store.py)│
+                                    │ - Resolve course │
+                                    │ - Build filter  │
+                                    │ - Query ChromaDB │
+                                    └─────────┬───────┘
+                                              │
+                                              ▼
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                               STORAGE LAYER                                     │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+                                    ┌─────────────────┐
+                                    │    ChromaDB     │
+                                    │                 │
+                                    │ ┌─────────────┐ │
+                                    │ │Course       │ │
+                                    │ │Catalog      │ │
+                                    │ └─────────────┘ │
+                                    │ ┌─────────────┐ │
+                                    │ │Course       │ │
+                                    │ │Content      │ │
+                                    │ │(Chunks)     │ │
+                                    │ └─────────────┘ │
+                                    └─────────┬───────┘
+                                              │
+                          SEARCH RESULTS      │
+                        ┌─────────────────────┘
+                        │
+                        ▼
+                ┌─────────────────┐
+                │ "[Course XYZ]   │
+                │  MCP is a       │
+                │  protocol for   │
+                │  connecting...  │
+                │                 │
+                │ Sources:        │
+                │ - Course XYZ L1 │
+                │ - Course ABC L2 │
+                └─────────┬───────┘
+                          │
+              FORMATTED   │   FLOW BACK UP
+              RESULTS     │   THE CHAIN
+                          ▼
+                ┌─────────────────┐
+                │   AI FINAL      │
+                │   RESPONSE      │
+                │ ┌─────────────┐ │
+                │ │"MCP is the  │ │
+                │ │Model Context│ │
+                │ │Protocol...  │ │
+                │ └─────────────┘ │
+                └─────────┬───────┘
+                          │
+                          ▼
+                ┌─────────────────┐     {answer, sources, session_id}
+                │   USER SEES     │ <─────────────────────────────────
+                │ ┌─────────────┐ │
+                │ │🤖 MCP is... │ │
+                │ │             │ │
+                │ │📚 Sources:  │ │
+                │ │- Course XYZ │ │
+                │ │- Course ABC │ │
+                │ └─────────────┘ │
+                └─────────────────┘
+
+FLOW TIMING
+===========
+1. User types → Frontend (0ms)
+2. API call → RAG System (50ms)
+3. Claude decides to search (500ms)
+4. Vector search → ChromaDB (100ms)
+5. Claude generates response (800ms)
+6. Display to user (50ms)
+
+Total: ~1.5 seconds
+
+KEY FEATURES
+============
+• Tool-based: Claude decides when to search
+• Smart matching: Semantic course name resolution  
+• Context preserved: Session history maintained
+• Source tracking: Shows which courses referenced
+• Error handling: Graceful fallbacks at each layer

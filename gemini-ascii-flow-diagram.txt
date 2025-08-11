@@ -1,0 +1,61 @@
+[ User @ Frontend (Browser) ]
+       |
+       | 1. User sends query (e.g., "What is RAG?")
+       v
+[ Frontend (script.js) ]
+       |
+       | 2. POST /api/query with { query, session_id }
+       v
++----------------------------------[   BACKEND   ]----------------------------------+
+|                                                                                    |
+|  [ FastAPI (app.py) ]                                                              |
+|         |                                                                          |
+|         | 3. Calls rag_system.query()                                              |
+|         v                                                                          |
+|  [ RAG System (rag_system.py) ]                                                    |
+|         |                                                                          |
+|         | 4. Calls ai_generator.generate_response() with tools                     |
+|         v                                                                          |
+|  [ AI Generator (ai_generator.py) ] ----------------> [ Claude API (External) ]     |
+|         |                                                   ^                      |
+|         | 5. Sends prompt + tool definitions                |                      |
+|         |                                                   |                      |
+|         <---------------------------------------------------'                      |
+|         | 6. Receives "tool_use" request:                                          |
+|         |    search_course_content(query="RAG")                                    |
+|         v                                                                          |
+|  [ Tool Manager / Search Tool ]                                                    |
+|         |                                                                          |
+|         | 7. Executes search by calling vector_store.search()                      |
+|         v                                                                          |
+|  [ Vector Store (vector_store.py) ] ----------------> [ ChromaDB ]                  |
+|         |                                                   ^                      |
+|         | 8. Queries for relevant document chunks           |                      |
+|         |                                                   |                      |
+|         <---------------------------------------------------'                      |
+|         | 9. Receives relevant chunks from the database                            |
+|         v                                                                          |
+|  [ AI Generator (ai_generator.py) ] ----------------> [ Claude API (External) ]     |
+|         |                                                   ^                      |
+|         | 10. Sends prompt + retrieved chunks as context    |                      |
+|         |                                                   |                      |
+|         <---------------------------------------------------'                      |
+|         | 11. Receives final, generated text answer                                |
+|         v                                                                          |
+|  [ RAG System (rag_system.py) ]                                                    |
+|         |                                                                          |
+|         | 12. Gets sources from Tool Manager & updates session history             |
+|         v                                                                          |
+|  [ FastAPI (app.py) ]                                                              |
+|         |                                                                          |
+|         | 13. Sends JSON response { answer, sources }                              |
+|         v                                                                          |
++------------------------------------------------------------------------------------+
+       |
+       | 14. Receives JSON response
+       v
+[ Frontend (script.js) ]
+       |
+       | 15. Renders the answer and sources in the chat window
+       v
+[ User @ Frontend (Browser) ]

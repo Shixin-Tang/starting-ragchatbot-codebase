@@ -9,6 +9,13 @@ if [ ! -d "backend" ]; then
     exit 1
 fi
 
+# Check for .env file and ANTHROPIC_API_KEY
+if [ ! -f ".env" ] || ! grep -q "ANTHROPIC_API_KEY=" ".env"; then
+    echo "Warning: .env file not found or ANTHROPIC_API_KEY is not set."
+    echo "Please create a .env file with your key. See .env.example for reference."
+    # Optionally, exit if the key is mandatory for startup
+fi
+
 echo "Starting Course Materials RAG System..."
 echo "Make sure you have set your ANTHROPIC_API_KEY in .env"
 
