@@ -122,10 +122,27 @@ function addMessage(content, type, sources = null, isWelcome = false) {
     let html = `<div class="message-content">${displayContent}</div>`;
     
     if (sources && sources.length > 0) {
+        // Format sources with clickable links
+        const formattedSources = sources.map(source => {
+            // Handle both old string format and new object format for backward compatibility
+            if (typeof source === 'string') {
+                return source;
+            } else if (source && typeof source === 'object' && source.link) {
+                // Create clickable link that opens in new tab
+                return `<a href="${source.link}" target="_blank" rel="noopener noreferrer">${source.text}</a>`;
+            } else if (source && typeof source === 'object' && source.text) {
+                // No link available, just display text
+                return source.text;
+            } else {
+                // Fallback for any other format
+                return String(source);
+            }
+        });
+        
         html += `
             <details class="sources-collapsible">
                 <summary class="sources-header">Sources</summary>
-                <div class="sources-content">${sources.join(', ')}</div>
+                <div class="sources-content">${formattedSources.join(', ')}</div>
             </details>
         `;
     }
@@ -155,12 +172,10 @@ async function createNewSession() {
 // Load course statistics
 async function loadCourseStats() {
     try {
-        console.log('Loading course stats...');
         const response = await fetch(`${API_URL}/courses`);
         if (!response.ok) throw new Error('Failed to load course stats');
         
         const data = await response.json();
-        console.log('Course data received:', data);
         
         // Update stats in UI
         if (totalCourses) {
@@ -179,7 +194,6 @@ async function loadCourseStats() {
         }
         
     } catch (error) {
-        console.error('Error loading course stats:', error);
         // Set default values on error
         if (totalCourses) {
             totalCourses.textContent = '0';

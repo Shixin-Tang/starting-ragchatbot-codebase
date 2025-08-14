@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Setup:**
 ```bash
 uv sync                           # Install dependencies
-echo "ANTHROPIC_API_KEY=key" > .env  # Configure API key
+echo "OPENAI_API_KEY=key" > .env  # Configure API key
 ```
 
 **Running:**
@@ -42,8 +42,8 @@ User Query → FastAPI → RAG System → AI Generator (Claude) → CourseSearch
 
 **RAG System** (`backend/rag_system.py`) - Main orchestrator that coordinates all components
 
-**AI Generator** (`backend/ai_generator.py`) - Anthropic Claude integration with tool calling:
-- Model: `claude-sonnet-4-20250514`
+**AI Generator** (`backend/ai_generator.py`) - OpenAI GPT integration with tool calling:
+- Model: `gpt-4o-mini` (cost-effective with good performance)
 - Uses system prompt to guide tool usage behavior
 - Handles tool execution and follow-up responses
 
@@ -65,12 +65,12 @@ User Query → FastAPI → RAG System → AI Generator (Claude) → CourseSearch
 ## Configuration
 
 **Main Config** (`backend/config.py`):
-- `ANTHROPIC_MODEL`: "claude-sonnet-4-20250514"
+- `OPENAI_MODEL`: "gpt-4o-mini"
 - `EMBEDDING_MODEL`: "all-MiniLM-L6-v2"
 - `CHUNK_SIZE`: 800, `CHUNK_OVERLAP`: 100
 - `CHROMA_PATH`: "./chroma_db"
 
-**Environment**: Requires `.env` with `ANTHROPIC_API_KEY`
+**Environment**: Requires `.env` with `OPENAI_API_KEY`
 
 ## Document Processing
 

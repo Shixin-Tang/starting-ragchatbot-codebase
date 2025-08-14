@@ -241,8 +241,37 @@ header h1 {
 }
 
 .sources-content {
-    padding: 0 0.5rem 0.25rem 1.5rem;
+    padding: 0.5rem 0.5rem 0.5rem 1.5rem;
     color: var(--text-secondary);
+    background-color: rgba(30, 41, 59, 0.5);
+    border-radius: 8px;
+    margin-top: 0.25rem;
+}
+
+/* Source link styling */
+.sources-content a {
+    color: #60a5fa;
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+    background-color: rgba(96, 165, 250, 0.1);
+    border: 1px solid rgba(96, 165, 250, 0.2);
+    border-radius: 6px;
+    display: inline-block;
+    margin: 0.125rem 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.sources-content a:hover {
+    color: #93c5fd;
+    background-color: rgba(96, 165, 250, 0.2);
+    border-color: rgba(96, 165, 250, 0.4);
+    transform: translateY(-1px);
+}
+
+.sources-content a:active {
+    transform: translateY(0);
 }
 
 /* Markdown formatting styles */
