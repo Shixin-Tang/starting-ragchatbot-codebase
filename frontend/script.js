@@ -5,7 +5,7 @@ const API_URL = '/api';
 let currentSessionId = null;
 
 // DOM elements
-let chatMessages, chatInput, sendButton, totalCourses, courseTitles;
+let chatMessages, chatInput, sendButton, totalCourses, courseTitles, newChatButton;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     sendButton = document.getElementById('sendButton');
     totalCourses = document.getElementById('totalCourses');
     courseTitles = document.getElementById('courseTitles');
+    newChatButton = document.getElementById('newChatButton');
     
     setupEventListeners();
     createNewSession();
@@ -29,6 +30,8 @@ function setupEventListeners() {
         if (e.key === 'Enter') sendMessage();
     });
     
+    // New chat button
+    newChatButton.addEventListener('click', handleNewChat);
     
     // Suggested questions
     document.querySelectorAll('.suggested-item').forEach(button => {
@@ -163,9 +166,30 @@ function escapeHtml(text) {
 
 // Removed removeMessage function - no longer needed since we handle loading differently
 
+// Handle new chat button click
+function handleNewChat() {
+    // Clear current conversation and start fresh
+    createNewSession();
+    
+    // Clear any input that might be in progress
+    if (chatInput) {
+        chatInput.value = '';
+        chatInput.focus();
+    }
+    
+    // Re-enable input if it was disabled
+    if (chatInput) chatInput.disabled = false;
+    if (sendButton) sendButton.disabled = false;
+}
+
 async function createNewSession() {
+    // Reset session ID to force creation of new session
     currentSessionId = null;
+    
+    // Clear chat messages
     chatMessages.innerHTML = '';
+    
+    // Add welcome message
     addMessage('Welcome to the Course Materials Assistant! I can help you with questions about courses, lessons and specific content. What would you like to know?', 'assistant', null, true);
 }
 

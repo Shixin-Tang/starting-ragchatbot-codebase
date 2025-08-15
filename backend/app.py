@@ -92,14 +92,38 @@ async def get_course_stats():
 @app.on_event("startup")
 async def startup_event():
     """Load initial documents on startup"""
+    # First try the relative path from project root
     docs_path = "../docs"
+    if not os.path.exists(docs_path):
+        # Fallback to absolute path construction
+        current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        docs_path = os.path.join(current_dir, "docs")
+    
     if os.path.exists(docs_path):
-        print("Loading initial documents...")
+        print(f"Loading initial documents from: {docs_path}")
         try:
-            courses, chunks = rag_system.add_course_folder(docs_path, clear_existing=False)
-            print(f"Loaded {courses} courses with {chunks} chunks")
+            # Use clear_existing=True to ensure fresh data load
+            courses, chunks = rag_system.add_course_folder(docs_path, clear_existing=True)
+            print(f"✅ Loaded {courses} courses with {chunks} chunks")
+            
+            # Verify the load was successful
+            analytics = rag_system.get_course_analytics()
+            print(f"📊 Final analytics: {analytics['total_courses']} courses loaded")
+            
         except Exception as e:
-            print(f"Error loading documents: {e}")
+            print(f"❌ Error loading documents: {e}")
+            import traceback
+            traceback.print_exc()
+    else:
+        print(f"❌ Docs directory not found at: {docs_path}")
+        print(f"🔍 Current working directory: {os.getcwd()}")
+        print(f"🔍 Files in current directory: {os.listdir('.')}")
+        # Try to find docs directory
+        for root, dirs, files in os.walk(".."):
+            if "docs" in dirs:
+                found_docs = os.path.join(root, "docs")
+                print(f"🔍 Found docs directory at: {found_docs}")
+                break
 
 # Custom static file handler with no-cache headers for development
 from fastapi.staticfiles import StaticFiles
